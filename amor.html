@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Para ti 💗</title>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+      font-family: Arial, sans-serif;
+      touch-action: manipulation;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<audio id="music" loop>
+  <source src="nuts.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const music = document.getElementById("music");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// TEXTOS
+const mainText = "Te quiero antipática";
+const birthdayText = "🎂 Feliz cumpleaños";
+const secretText = "Amo tus ojos ✨";
+
+// ESTRELLAS
+const stars = Array.from({ length: 100 }, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  r: Math.random() * 1.3,
+  s: Math.random() * 0.2 + 0.05,
+  glow: Math.random() * 10
+}));
+
+// COLUMNAS
+const columnSpacing = 65;
+const columns = Math.floor(canvas.width / columnSpacing);
+const drops = Array(columns).fill(1);
+
+// CONTADORES
+let clickCount = 0;
+let showSecret = false;
+let secretTimer = 0;
+
+// ⭐ ESTRELLAS PARPADEANDO SIEMPRE
+function drawStars() {
+  stars.forEach(s => {
+    ctx.beginPath();
+    ctx.shadowBlur = 8 + Math.sin(Date.now() * 0.003 + s.glow) * 8;
+    ctx.shadowColor = "white";
+    ctx.fillStyle = "white";
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    s.y += s.s;
+    if (s.y > canvas.height) s.y = 0;
+  });
+}
+
+// ✨ TEXTO
+function draw() {
+  ctx.fillStyle = "rgba(0,0,0,0.15)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  drawStars();
+
+  for (let i = 0; i < drops.length; i++) {
+    let text = mainText;
+    let size = 18;
+    let color = "#ff7eb9";
+
+    if (Math.random() > 0.996) {
+      text = birthdayText;
+      size = 26;
+      color = "#ffd700";
+    }
+
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = color;
+    ctx.font = `${size}px Arial`;
+    ctx.fillStyle = color;
+    ctx.fillText(text, i * columnSpacing, drops[i] * 28);
+
+    if (drops[i] * 28 > canvas.height && Math.random() > 0.98) {
+      drops[i] = 0;
+    }
+
+    drops[i] += 0.35;
+  }
+
+  // MENSAJE ESPECIAL
+  if (showSecret) {
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = "#ffd700";
+    ctx.font = "32px Arial";
+    ctx.fillStyle = "#ffd700";
+    ctx.fillText(
+      secretText,
+      canvas.width / 2 - 150,
+      canvas.height / 2
+    );
+
+    secretTimer--;
+    if (secretTimer <= 0) {
+      showSecret = false;
+    }
+  }
+
+  ctx.shadowBlur = 0;
+}
+
+setInterval(draw, 60);
+
+// INTERACCIÓN
+let musicStarted = false;
+
+function interact(x, y) {
+  if (!musicStarted) {
+    music.volume = 0.5;
+    music.play();
+    musicStarted = true;
+  }
+
+  clickCount++;
+
+  // LOVE YOU siempre
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = "#ff4f9a";
+  ctx.font = "26px Arial";
+  ctx.fillStyle = "#ff4f9a";
+  ctx.fillText("LOVE YOU", x, y);
+
+  // Cada 3 clicks
+  if (clickCount % 3 === 0) {
+    showSecret = true;
+    secretTimer = 180; // se queda bastante tiempo
+  }
+}
+
+// PC
+canvas.addEventListener("click", e => {
+  interact(e.clientX, e.clientY);
+});
+
+// MÓVIL
+canvas.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  interact(t.clientX, t.clientY);
+});
+
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
